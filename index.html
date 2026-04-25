@@ -3,26 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini TikTok Inteligente</title>
+<title>IA Controle Automático</title>
 
 <style>
 body {
   margin: 0;
   overflow: hidden;
   background: black;
-  font-family: Arial;
   color: white;
-}
-
-.video-container {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
+  font-family: Arial;
 }
 
 video {
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   object-fit: cover;
 }
 
@@ -38,70 +32,51 @@ video {
   width: 100%;
   text-align: center;
   font-size: 14px;
-  opacity: 0.8;
+}
+
+.like {
+  position: absolute;
+  right: 20px;
+  bottom: 120px;
+  font-size: 30px;
+  opacity: 0.3;
+  transition: 0.3s;
+}
+
+.like.active {
+  opacity: 1;
+  transform: scale(1.4);
 }
 
 .ai {
   font-size: 12px;
   opacity: 0.6;
 }
-
-.flash {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: white;
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.2s;
-}
-
-/* Botão ativar */
-#startBtn {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 15px 25px;
-  font-size: 18px;
-  z-index: 9999;
-  border: none;
-  border-radius: 10px;
-  background: #00c6ff;
-  color: black;
-}
 </style>
 </head>
 
 <body>
 
-<!-- 🔥 BOTÃO ESSENCIAL -->
-<button id="startBtn">Ativar Controle</button>
+<video id="video" autoplay muted loop></video>
 
-<div class="video-container">
-  <video id="video" autoplay muted loop></video>
-
-  <div class="overlay">
-    <h3>@usuario</h3>
-    <p>🔥 Controle sem toque</p>
-  </div>
-
-  <div class="status" id="status">
-    IA analisando comportamento...
-    <div class="ai" id="ai"></div>
-  </div>
-
-  <div class="flash" id="flash"></div>
+<div class="overlay">
+  <h3>@usuario</h3>
+  <p>🔥 Sistema inteligente</p>
 </div>
+
+<div class="status" id="status">
+  IA analisando você...
+  <div class="ai" id="ai"></div>
+</div>
+
+<div class="like" id="like">❤️</div>
 
 <script>
 const video = document.getElementById("video");
 const status = document.getElementById("status");
 const ai = document.getElementById("ai");
-const flash = document.getElementById("flash");
-const startBtn = document.getElementById("startBtn");
+const like = document.getElementById("like");
 
-// 🎬 vídeos de teste
 const videos = [
   "https://www.w3schools.com/html/mov_bbb.mp4",
   "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
@@ -109,96 +84,66 @@ const videos = [
 ];
 
 let index = 0;
-let lastTilt = 0;
-let cooldown = false;
 
-// Carregar vídeo
-function loadVideo() {
+// trocar vídeo
+function nextVideo() {
+  index = (index + 1) % videos.length;
   video.src = videos[index];
   video.play();
 }
 
-// Próximo vídeo
-function nextVideo() {
-  index = (index + 1) % videos.length;
-  efeito();
-  loadVideo();
+// curtir vídeo
+function likeVideo() {
+  like.classList.add("active");
+  setTimeout(() => like.classList.remove("active"), 800);
 }
 
-// Vídeo anterior
-function prevVideo() {
-  index = (index - 1 + videos.length) % videos.length;
-  efeito();
-  loadVideo();
+// pausar
+function pauseVideo() {
+  video.pause();
+  status.innerHTML = "⏸️ IA pausou o vídeo";
+  setTimeout(() => {
+    video.play();
+    status.innerHTML = "▶️ IA retomou";
+  }, 1500);
 }
 
-// Efeito visual
-function efeito() {
-  flash.style.opacity = 0.4;
-  setTimeout(() => flash.style.opacity = 0, 200);
-}
-
-// Fake IA
+// IA fake mensagens
 function fakeAI() {
   const msgs = [
-    "Detectando gesto...",
-    "Analisando intenção...",
-    "IA ativa...",
-    "Reconhecendo padrão...",
-    "Ajustando resposta..."
+    "Analisando seu interesse...",
+    "Detectando atenção...",
+    "Ajustando feed...",
+    "Prevendo próxima ação...",
+    "Otimizando experiência..."
   ];
   ai.innerText = msgs[Math.floor(Math.random() * msgs.length)];
 }
+
 setInterval(fakeAI, 2000);
 
-// 🔥 ATIVAR SENSOR
-startBtn.addEventListener("click", () => {
+// sistema automático
+setInterval(() => {
+  const action = Math.random();
 
-  if (typeof DeviceOrientationEvent !== "undefined" &&
-      typeof DeviceOrientationEvent.requestPermission === "function") {
+  if (action < 0.4) {
+    nextVideo();
+    status.innerHTML = "➡️ IA mudou o vídeo";
 
-    DeviceOrientationEvent.requestPermission()
-      .then(response => {
-        if (response === "granted") {
-          iniciarControle();
-          startBtn.style.display = "none";
-        }
-      });
+  } else if (action < 0.7) {
+    likeVideo();
+    status.innerHTML = "❤️ IA curtiu";
 
   } else {
-    iniciarControle();
-    startBtn.style.display = "none";
+    pauseVideo();
   }
 
-});
+}, 4000);
 
-// 🔥 CONTROLE REAL
-function iniciarControle() {
-  window.addEventListener("deviceorientation", (event) => {
+// iniciar
+video.src = videos[0];
+video.play();
 
-    const tilt = event.gamma; // lateral
-
-    if (!tilt || cooldown) return;
-
-    if (tilt > 20) {
-      nextVideo();
-      status.innerHTML = "➡️ Próximo vídeo (IA)";
-      cooldown = true;
-
-    } else if (tilt < -20) {
-      prevVideo();
-      status.innerHTML = "⬅️ Vídeo anterior (IA)";
-      cooldown = true;
-    }
-
-    setTimeout(() => cooldown = false, 1000);
-    lastTilt = tilt;
-
-  });
-}
-
-// iniciar primeiro vídeo
-loadVideo();
 </script>
 
 </body>
