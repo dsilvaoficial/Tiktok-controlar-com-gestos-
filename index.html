@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini TikTok Inteligente</title>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+  font-family: Arial;
+  color: white;
+}
+
+.video-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+}
+
+.status {
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.ai {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.flash {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s;
+}
+</style>
+</head>
+
+<body>
+
+<div class="video-container">
+  <video id="video" autoplay muted loop></video>
+
+  <div class="overlay">
+    <h3>@usuario</h3>
+    <p>🔥 Teste de controle inteligente</p>
+  </div>
+
+  <div class="status" id="status">
+    IA analisando comportamento...
+    <div class="ai" id="ai"></div>
+  </div>
+
+  <div class="flash" id="flash"></div>
+</div>
+
+<script>
+const video = document.getElementById("video");
+const status = document.getElementById("status");
+const ai = document.getElementById("ai");
+const flash = document.getElementById("flash");
+
+// 🎬 Coloque seus vídeos aqui (pode usar links ou arquivos)
+const videos = [
+  "https://www.w3schools.com/html/mov_bbb.mp4",
+  "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  "https://www.w3schools.com/html/movie.mp4"
+];
+
+let index = 0;
+let lastTilt = 0;
+let cooldown = false;
+
+// Carrega vídeo
+function loadVideo() {
+  video.src = videos[index];
+  video.play();
+}
+
+// Próximo vídeo
+function nextVideo() {
+  if (index < videos.length - 1) {
+    index++;
+  } else {
+    index = 0;
+  }
+  triggerEffect();
+  loadVideo();
+}
+
+// Vídeo anterior
+function prevVideo() {
+  if (index > 0) {
+    index--;
+  } else {
+    index = videos.length - 1;
+  }
+  triggerEffect();
+  loadVideo();
+}
+
+// Efeito visual
+function triggerEffect() {
+  flash.style.opacity = 0.4;
+  setTimeout(() => flash.style.opacity = 0, 200);
+}
+
+// Fake IA mensagens
+function fakeAI() {
+  const msgs = [
+    "Detectando gesto...",
+    "Analisando intenção...",
+    "IA ativa...",
+    "Reconhecendo padrão...",
+    "Ajustando resposta..."
+  ];
+  ai.innerText = msgs[Math.floor(Math.random() * msgs.length)];
+}
+
+setInterval(fakeAI, 2000);
+
+// Controle por movimento
+window.addEventListener("deviceorientation", (event) => {
+  const tilt = event.gamma; // lado
+
+  if (!tilt || cooldown) return;
+
+  let diff = tilt - lastTilt;
+
+  if (tilt > 20) {
+    nextVideo();
+    status.innerHTML = "➡️ Próximo vídeo (IA)";
+    cooldown = true;
+  } 
+  else if (tilt < -20) {
+    prevVideo();
+    status.innerHTML = "⬅️ Vídeo anterior (IA)";
+    cooldown = true;
+  }
+
+  setTimeout(() => cooldown = false, 1000);
+  lastTilt = tilt;
+});
+
+// Inicializa
+loadVideo();
+</script>
+
+</body>
+</html>
