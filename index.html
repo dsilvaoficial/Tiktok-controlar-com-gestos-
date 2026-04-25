@@ -55,17 +55,35 @@ video {
   pointer-events: none;
   transition: 0.2s;
 }
+
+/* Botão ativar */
+#startBtn {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 15px 25px;
+  font-size: 18px;
+  z-index: 9999;
+  border: none;
+  border-radius: 10px;
+  background: #00c6ff;
+  color: black;
+}
 </style>
 </head>
 
 <body>
+
+<!-- 🔥 BOTÃO ESSENCIAL -->
+<button id="startBtn">Ativar Controle</button>
 
 <div class="video-container">
   <video id="video" autoplay muted loop></video>
 
   <div class="overlay">
     <h3>@usuario</h3>
-    <p>🔥 Teste de controle inteligente</p>
+    <p>🔥 Controle sem toque</p>
   </div>
 
   <div class="status" id="status">
@@ -81,8 +99,9 @@ const video = document.getElementById("video");
 const status = document.getElementById("status");
 const ai = document.getElementById("ai");
 const flash = document.getElementById("flash");
+const startBtn = document.getElementById("startBtn");
 
-// 🎬 Coloque seus vídeos aqui (pode usar links ou arquivos)
+// 🎬 vídeos de teste
 const videos = [
   "https://www.w3schools.com/html/mov_bbb.mp4",
   "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
@@ -93,7 +112,7 @@ let index = 0;
 let lastTilt = 0;
 let cooldown = false;
 
-// Carrega vídeo
+// Carregar vídeo
 function loadVideo() {
   video.src = videos[index];
   video.play();
@@ -101,33 +120,25 @@ function loadVideo() {
 
 // Próximo vídeo
 function nextVideo() {
-  if (index < videos.length - 1) {
-    index++;
-  } else {
-    index = 0;
-  }
-  triggerEffect();
+  index = (index + 1) % videos.length;
+  efeito();
   loadVideo();
 }
 
 // Vídeo anterior
 function prevVideo() {
-  if (index > 0) {
-    index--;
-  } else {
-    index = videos.length - 1;
-  }
-  triggerEffect();
+  index = (index - 1 + videos.length) % videos.length;
+  efeito();
   loadVideo();
 }
 
 // Efeito visual
-function triggerEffect() {
+function efeito() {
   flash.style.opacity = 0.4;
   setTimeout(() => flash.style.opacity = 0, 200);
 }
 
-// Fake IA mensagens
+// Fake IA
 function fakeAI() {
   const msgs = [
     "Detectando gesto...",
@@ -138,33 +149,55 @@ function fakeAI() {
   ];
   ai.innerText = msgs[Math.floor(Math.random() * msgs.length)];
 }
-
 setInterval(fakeAI, 2000);
 
-// Controle por movimento
-window.addEventListener("deviceorientation", (event) => {
-  const tilt = event.gamma; // lado
+// 🔥 ATIVAR SENSOR
+startBtn.addEventListener("click", () => {
 
-  if (!tilt || cooldown) return;
+  if (typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function") {
 
-  let diff = tilt - lastTilt;
+    DeviceOrientationEvent.requestPermission()
+      .then(response => {
+        if (response === "granted") {
+          iniciarControle();
+          startBtn.style.display = "none";
+        }
+      });
 
-  if (tilt > 20) {
-    nextVideo();
-    status.innerHTML = "➡️ Próximo vídeo (IA)";
-    cooldown = true;
-  } 
-  else if (tilt < -20) {
-    prevVideo();
-    status.innerHTML = "⬅️ Vídeo anterior (IA)";
-    cooldown = true;
+  } else {
+    iniciarControle();
+    startBtn.style.display = "none";
   }
 
-  setTimeout(() => cooldown = false, 1000);
-  lastTilt = tilt;
 });
 
-// Inicializa
+// 🔥 CONTROLE REAL
+function iniciarControle() {
+  window.addEventListener("deviceorientation", (event) => {
+
+    const tilt = event.gamma; // lateral
+
+    if (!tilt || cooldown) return;
+
+    if (tilt > 20) {
+      nextVideo();
+      status.innerHTML = "➡️ Próximo vídeo (IA)";
+      cooldown = true;
+
+    } else if (tilt < -20) {
+      prevVideo();
+      status.innerHTML = "⬅️ Vídeo anterior (IA)";
+      cooldown = true;
+    }
+
+    setTimeout(() => cooldown = false, 1000);
+    lastTilt = tilt;
+
+  });
+}
+
+// iniciar primeiro vídeo
 loadVideo();
 </script>
 
